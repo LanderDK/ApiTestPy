@@ -11,6 +11,7 @@ import hashlib
 class API:
     class Constants:
         apiUrl = "https://api.blitzware.xyz/api/"
+        # apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
@@ -302,6 +303,50 @@ class API:
                 print(str(ex))
             API.Security.end()
             return False
+
+    @staticmethod
+    def log(username, action):
+        if not API.Constants.initialized:
+            print("Please initialize your application first!")
+            sys.exit(0)
+        try:
+            API.Security.start()
+            API.Constants.timeSent = datetime.datetime.now()
+            url = f"{API.Constants.apiUrl}appLogs/"
+            headers = {"Content-type": "application/json"}
+            data = {"username": username, "action": action,
+                    "ip": API.Constants.IP(), "appId": API.ApplicationSettings.id}
+            response = requests.post(
+                url, data=json.dumps(data), headers=headers)
+            content = response.json()
+
+            if API.Security.malicious_check(API.Constants.timeSent):
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
+                API.Security.end()
+                sys.exit(0)
+            else:
+                if content["code"] == "UNAUTHORIZED":
+                    print(content["message"])
+                elif content["code"] == "NOT_FOUND":
+                    print(content["message"])
+                elif content["code"] == "VALIDATION_FAILED":
+                    print(content["details"])
+                API.Security.end()
+                sys.exit(0)
+        except Exception as ex:
+            if "Unable to connect to the remote server" in str(ex):
+                print("Unable to connect to the remote server!")
+            else:
+                print(str(ex))
+            API.Security.end()
+            sys.exit(0)
 
     class Security:
         @staticmethod

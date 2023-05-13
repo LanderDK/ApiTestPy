@@ -2,7 +2,7 @@ from API import API
 import sys
 
 API.OnProgramStart.Initialize(
-    "BlitzWare", "64aa5135948a28fa6040b0d6900de77e9a3924e6cee6cc3333c32ff5f8707e8e", "1.0")
+    "APP NAME", "SECRET", "VERSION")
 
 print("\n[1] Login")
 print("[2] Register")
@@ -19,6 +19,7 @@ if option == "1":
 
     if API.login(username=username, password=password):
         print("Successfully Logged In!")
+        API.log(username=API.User.username, action="User logged in")
         print("ID:", API.User.id)
         print("Username:", API.User.username)
         print("Email:", API.User.email)
@@ -41,9 +42,10 @@ elif option == "2":
     if not API.ApplicationSettings.freeMode:
         print("License:")
         license = input()
-    
+
     if API.register(username=username, password=password, email=email, license=license):
         print("Successfully Registered!")
+        API.log(username=API.User.username, action="User registered")
         input()
     else:
         sys.exit(0)
@@ -59,6 +61,7 @@ if not API.ApplicationSettings.freeMode:
 
         if API.extendSub(username=username, password=password, license=license):
             print("Successfully Extended Your Subscription!")
+            API.log(username=API.User.username, action="User extended")
             input()
         else:
             sys.exit(0)
