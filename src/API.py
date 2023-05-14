@@ -10,8 +10,8 @@ import hashlib
 
 class API:
     class Constants:
-        # apiUrl = "https://api.blitzware.xyz/api/"
-        apiUrl = "http://localhost:9000/api/"
+        apiUrl = "https://api.blitzware.xyz/api/"
+        # apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
