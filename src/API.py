@@ -10,8 +10,8 @@ import hashlib
 
 class API:
     class Constants:
-        apiUrl = "https://api.blitzware.xyz/api/"
-        # apiUrl = "http://localhost:9000/api/"
+        # apiUrl = "https://api.blitzware.xyz/api/"
+        apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
@@ -227,6 +227,7 @@ class API:
 
             if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
                 API.User.id = content["id"]
+                API.User.username = content["username"]
                 API.User.email = content["email"]
                 API.User.expiry = content["expiryDate"]
                 API.User.lastLogin = content["lastLogin"]
