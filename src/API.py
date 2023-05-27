@@ -160,7 +160,7 @@ class API:
             url = f"{API.Constants.apiUrl}users/login"
             headers = {"Content-type": "application/json"}
             data = {"username": username, "password": password,
-                    "hwid": API.Constants.HWID(), "lastIP": API.Constants.IP()}
+                    "hwid": API.Constants.HWID(), "lastIP": API.Constants.IP(), "appId": API.ApplicationSettings.id}
             response = requests.post(
                 url, data=json.dumps(data), headers=headers)
             content = response.json()
@@ -265,7 +265,7 @@ class API:
             url = f"{API.Constants.apiUrl}users/upgrade"
             headers = {"Content-type": "application/json"}
             data = {"username": username, "password": password, "license": license,
-                    "hwid": API.Constants.HWID()}
+                    "hwid": API.Constants.HWID(), "appId": API.ApplicationSettings.id}
             response = requests.put(
                 url, data=json.dumps(data), headers=headers)
             content = response.json()
