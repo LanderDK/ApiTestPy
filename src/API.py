@@ -10,8 +10,8 @@ import hashlib
 
 class API:
     class Constants:
-        apiUrl = "https://api.blitzware.xyz/api/"
-        # apiUrl = "http://localhost:9000/api/"
+        # apiUrl = "https://api.blitzware.xyz/api/"
+        apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
@@ -191,6 +191,8 @@ class API:
                     print(content["message"])
                 elif content["code"] == "VALIDATION_FAILED":
                     print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
                 API.Security.end()
                 return False
         except Exception as ex:
@@ -239,7 +241,7 @@ class API:
                 if content["code"] == "ER_DUP_ENTRY":
                     print("User with this username already exists!")
                 elif content["code"] == "FORBIDDEN":
-                    print("User with this username already exists!")
+                    print(content["message"])
                 elif content["code"] == "NOT_FOUND":
                     print(content["message"])
                 elif content["code"] == "VALIDATION_FAILED":
@@ -295,6 +297,8 @@ class API:
                     print(content["message"])
                 elif content["code"] == "VALIDATION_FAILED":
                     print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
                 API.Security.end()
                 return False
         except Exception as ex:
