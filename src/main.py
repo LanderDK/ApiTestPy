@@ -2,7 +2,7 @@ from API import API
 import sys
 
 API.OnProgramStart.Initialize(
-    "APP NAME", "SECRET", "VERSION")
+    "APP NAME", "APP SECRET", "APP VERSION")
 
 print("\n[1] Login")
 print("[2] Register")
@@ -47,6 +47,7 @@ elif option == "2":
         print("Successfully Registered!")
         API.log(username=API.User.username, action="User registered")
         input()
+        # Do code you want
     else:
         sys.exit(0)
 
@@ -63,5 +64,6 @@ if not API.ApplicationSettings.freeMode:
             print("Successfully Extended Your Subscription!")
             API.log(username=API.User.username, action="User extended")
             input()
+            # Do code you want
         else:
             sys.exit(0)

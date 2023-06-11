@@ -45,12 +45,12 @@ class API:
     class User:
         id = ""
         username = ""
-        password = ""
         email = ""
         hwid = ""
         ip = ""
         expiry = ""
         lastLogin = ""
+        authToken = ""
 
     class OnProgramStart:
         name = ""
@@ -174,14 +174,14 @@ class API:
                 sys.exit(0)
 
             if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
-                API.User.id = content["id"]
-                API.User.username = content["username"]
-                API.User.password = content["password"]
-                API.User.email = content["email"]
-                API.User.expiry = content["expiryDate"]
-                API.User.lastLogin = content["lastLogin"]
-                API.User.ip = content["lastIP"]
-                API.User.hwid = content["hwid"]
+                API.User.id = content["user"]["id"]
+                API.User.username = content["user"]["username"]
+                API.User.email = content["user"]["email"]
+                API.User.expiry = content["user"]["expiryDate"]
+                API.User.lastLogin = content["user"]["lastLogin"]
+                API.User.ip = content["user"]["lastIP"]
+                API.User.hwid = content["user"]["hwid"]
+                API.User.authToken = content["token"]
                 API.Security.end()
                 return True
             else:
@@ -228,13 +228,14 @@ class API:
                 sys.exit(0)
 
             if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
-                API.User.id = content["id"]
-                API.User.username = content["username"]
-                API.User.email = content["email"]
-                API.User.expiry = content["expiryDate"]
-                API.User.lastLogin = content["lastLogin"]
-                API.User.ip = content["lastIP"]
-                API.User.hwid = content["hwid"]
+                API.User.id = content["user"]["id"]
+                API.User.username = content["user"]["username"]
+                API.User.email = content["user"]["email"]
+                API.User.expiry = content["user"]["expiryDate"]
+                API.User.lastLogin = content["user"]["lastLogin"]
+                API.User.ip = content["user"]["lastIP"]
+                API.User.hwid = content["user"]["hwid"]
+                API.User.authToken = content["token"]
                 API.Security.end()
                 return True
             else:
@@ -281,13 +282,14 @@ class API:
                 sys.exit(0)
 
             if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
-                API.User.id = content["id"]
-                API.User.username = content["username"]
-                API.User.email = content["email"]
-                API.User.expiry = content["expiryDate"]
-                API.User.lastLogin = content["lastLogin"]
-                API.User.ip = content["lastIP"]
-                API.User.hwid = content["hwid"]
+                API.User.id = content["user"]["id"]
+                API.User.username = content["user"]["username"]
+                API.User.email = content["user"]["email"]
+                API.User.expiry = content["user"]["expiryDate"]
+                API.User.lastLogin = content["user"]["lastLogin"]
+                API.User.ip = content["user"]["lastIP"]
+                API.User.hwid = content["user"]["hwid"]
+                API.User.authToken = content["token"]
                 API.Security.end()
                 return True
             else:
@@ -335,7 +337,6 @@ class API:
 
             if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
                 API.Security.end()
-                sys.exit(0)
             else:
                 if content["code"] == "UNAUTHORIZED":
                     print(content["message"])
