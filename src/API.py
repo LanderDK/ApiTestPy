@@ -10,8 +10,8 @@ import hashlib
 
 class API:
     class Constants:
-        apiUrl = "https://api.blitzware.xyz/api/"
-        # apiUrl = "http://localhost:9000/api/"
+        # apiUrl = "https://api.blitzware.xyz/api/"
+        apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
@@ -67,11 +67,21 @@ class API:
                     url, data=json.dumps(data), headers=headers)
                 content = response.json()
 
+                received_hash = response.headers.get('X-Response-Hash')
+                recalculated_hash = API.Security.calculate_hash(response.text)
+
+                # print(received_hash)
+                # print(recalculated_hash)
+
                 if API.Security.malicious_check(API.Constants.timeSent):
                     print("Possible malicious activity detected!")
                     sys.exit(0)
 
                 if API.Constants.breached:
+                    print("Possible malicious activity detected!")
+                    sys.exit(0)
+
+                if received_hash != recalculated_hash:
                     print("Possible malicious activity detected!")
                     sys.exit(0)
 
@@ -165,11 +175,21 @@ class API:
                 url, data=json.dumps(data), headers=headers)
             content = response.json()
 
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
             if API.Security.malicious_check(API.Constants.timeSent):
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
             if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
@@ -219,11 +239,21 @@ class API:
                 url, data=json.dumps(data), headers=headers)
             content = response.json()
 
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
             if API.Security.malicious_check(API.Constants.timeSent):
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
             if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
@@ -273,11 +303,21 @@ class API:
                 url, data=json.dumps(data), headers=headers)
             content = response.json()
 
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
             if API.Security.malicious_check(API.Constants.timeSent):
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
             if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
                 print("Possible malicious activity detected!")
                 sys.exit(0)
 
@@ -401,3 +441,8 @@ class API:
                 return True
             else:
                 return False
+
+        @staticmethod
+        def calculate_hash(data):
+            hash_object = hashlib.sha256(data.encode())
+            return hash_object.hexdigest()
