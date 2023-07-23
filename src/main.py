@@ -16,8 +16,10 @@ if option == "1":
     username = input()
     print("Password:")
     password = input()
+    print("2FA code (if enabled):")
+    twoFactorCode = input()
 
-    if API.login(username=username, password=password):
+    if API.login(username=username, password=password, twoFactorCode=twoFactorCode):
         print("Successfully Logged In!")
         API.log(username=API.User.username, action="User logged in")
         print("ID:", API.User.id)
@@ -27,8 +29,19 @@ if option == "1":
         print("HWID:", API.User.hwid)
         print("Last Login:", API.User.lastLogin)
         print("IP:", API.User.ip)
-        input()
         # Do code you want
+        print("Press 1 to enable 2FA, press 2 to disable 2FA:")
+        option = input()
+        if option == "1":
+            API.createQRCode()
+            print("QR Code:")
+            code = input()
+            API.verify2FA(code)
+        if option == "2":
+            print("QR Code:")
+            code = input()
+            API.disable2FA(code)
+
     else:
         sys.exit(0)
 elif option == "2":

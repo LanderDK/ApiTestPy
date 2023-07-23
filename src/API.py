@@ -6,12 +6,15 @@ import os
 import sys
 import requests
 import hashlib
+from PIL import Image
+from io import BytesIO
+import base64
 
 
 class API:
     class Constants:
-        # apiUrl = "https://api.blitzware.xyz/api/"
-        apiUrl = "http://localhost:9000/api/"
+        apiUrl = "https://api.blitzware.xyz/api/"
+        # apiUrl = "http://localhost:9000/api/"
         initialized = False
         started = False
         breached = False
@@ -160,7 +163,7 @@ class API:
                     sys.exit(0)
 
     @staticmethod
-    def login(username, password):
+    def login(username, password, twoFactorCode):
         if not API.Constants.initialized:
             print("Please initialize your application first!")
             return False
@@ -169,7 +172,7 @@ class API:
             API.Constants.timeSent = datetime.datetime.now()
             url = f"{API.Constants.apiUrl}users/login"
             headers = {"Content-type": "application/json"}
-            data = {"username": username, "password": password,
+            data = {"username": username, "password": password, "twoFactorCode": twoFactorCode,
                     "hwid": API.Constants.HWID(), "lastIP": API.Constants.IP(), "appId": API.ApplicationSettings.id}
             response = requests.post(
                 url, data=json.dumps(data), headers=headers)
@@ -286,7 +289,7 @@ class API:
                 print(str(ex))
             API.Security.end()
             return False
-
+        
     @staticmethod
     def extendSub(username, password, license):
         if not API.Constants.initialized:
@@ -360,7 +363,8 @@ class API:
             API.Security.start()
             API.Constants.timeSent = datetime.datetime.now()
             url = f"{API.Constants.apiUrl}appLogs/"
-            headers = {"Content-type": "application/json"}
+            headers = {"Content-type": "application/json",
+                       'Authorization': f'Bearer {API.User.authToken}'}
             data = {"username": username, "action": action,
                     "ip": API.Constants.IP(), "appId": API.ApplicationSettings.id}
             response = requests.post(
@@ -390,6 +394,187 @@ class API:
             if "Unable to connect to the remote server" in str(ex):
                 print("Unable to connect to the remote server!")
             else:
+                print(str(ex))
+            API.Security.end()
+            sys.exit(0)
+
+    @staticmethod
+    def createQRCode():
+        if not API.Constants.initialized:
+            print("Please initialize your application first!")
+            sys.exit(0)
+        try:
+            API.Security.start()
+            API.Constants.timeSent = datetime.datetime.now()
+            url = f"{API.Constants.apiUrl}2fa/user"
+            headers = {"Content-type": "application/json",
+                       'Authorization': f'Bearer {API.User.authToken}'}
+            data = {"userId": API.User.id, "appId": API.ApplicationSettings.id}
+            response = requests.post(
+                url, data=json.dumps(data), headers=headers)
+            content = response.text
+
+            if API.Security.malicious_check(API.Constants.timeSent):
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
+                # Extract the Base64 encoded image data from the QR code data
+                _, encoded_image = content.split(",")
+                # Decode the Base64 data
+                decoded_image = base64.b64decode(encoded_image)
+                # Open the image using PIL
+                img = Image.open(BytesIO(decoded_image))
+                # Display the image
+                img.show()
+                API.Security.end()
+            else:
+                content = response.json()
+                if content["code"] == "UNAUTHORIZED":
+                    print(content["message"])
+                elif content["code"] == "NOT_FOUND":
+                    print(content["message"])
+                elif content["code"] == "VALIDATION_FAILED":
+                    print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
+                API.Security.end()
+                sys.exit(0)
+        except Exception as ex:
+            if "Unable to connect to the remote server" in str(ex):
+                print("Unable to connect to the remote server!")
+            else:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                line_number = exc_tb.tb_lineno
+                print(f"Exception occurred on line {line_number}: {ex}")
+
+                print(str(ex))
+            API.Security.end()
+            sys.exit(0)
+
+    @staticmethod
+    def verify2FA(code):
+        if not API.Constants.initialized:
+            print("Please initialize your application first!")
+            sys.exit(0)
+        try:
+            API.Security.start()
+            API.Constants.timeSent = datetime.datetime.now()
+            url = f"{API.Constants.apiUrl}2fa/user/verify"
+            headers = {"Content-type": "application/json",
+                       'Authorization': f'Bearer {API.User.authToken}'}
+            data = {"userId": API.User.id,
+                    "appId": API.ApplicationSettings.id, "token": code}
+            response = requests.post(
+                url, data=json.dumps(data), headers=headers)
+            content = response.json()
+
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
+            if API.Security.malicious_check(API.Constants.timeSent):
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
+                print("2FA has been enabled!")
+                API.Security.end()
+            else:
+                if content["code"] == "UNAUTHORIZED":
+                    print(content["message"])
+                elif content["code"] == "NOT_FOUND":
+                    print(content["message"])
+                elif content["code"] == "VALIDATION_FAILED":
+                    print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
+                API.Security.end()
+                sys.exit(0)
+        except Exception as ex:
+            if "Unable to connect to the remote server" in str(ex):
+                print("Unable to connect to the remote server!")
+            else:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                line_number = exc_tb.tb_lineno
+                print(f"Exception occurred on line {line_number}: {ex}")
+
+                print(str(ex))
+            API.Security.end()
+            sys.exit(0)
+
+    @staticmethod
+    def disable2FA(code):
+        if not API.Constants.initialized:
+            print("Please initialize your application first!")
+            sys.exit(0)
+        try:
+            API.Security.start()
+            API.Constants.timeSent = datetime.datetime.now()
+            url = f"{API.Constants.apiUrl}2fa/user/disable"
+            headers = {"Content-type": "application/json",
+                       'Authorization': f'Bearer {API.User.authToken}'}
+            data = {"userId": API.User.id,
+                    "appId": API.ApplicationSettings.id, "token": code}
+            response = requests.post(
+                url, data=json.dumps(data), headers=headers)
+            content = response.json()
+
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
+            if API.Security.malicious_check(API.Constants.timeSent):
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
+                print("2FA has been disabled!")
+                API.Security.end()
+            else:
+                print("else")
+                if content["code"] == "UNAUTHORIZED":
+                    print(content["message"])
+                elif content["code"] == "NOT_FOUND":
+                    print(content["message"])
+                elif content["code"] == "VALIDATION_FAILED":
+                    print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
+                API.Security.end()
+                sys.exit(0)
+        except Exception as ex:
+            if "Unable to connect to the remote server" in str(ex):
+                print("Unable to connect to the remote server!")
+            else:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                line_number = exc_tb.tb_lineno
+                print(f"Exception occurred on line {line_number}: {ex}")
+
                 print(str(ex))
             API.Security.end()
             sys.exit(0)
