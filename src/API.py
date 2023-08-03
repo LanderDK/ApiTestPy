@@ -227,6 +227,70 @@ class API:
             return False
 
     @staticmethod
+    def loginLicenseOnly(license):
+        if not API.Constants.initialized:
+            print("Please initialize your application first!")
+            return False
+        try:
+            API.Security.start()
+            API.Constants.timeSent = datetime.datetime.now()
+            url = f"{API.Constants.apiUrl}licenses/login"
+            headers = {"Content-type": "application/json"}
+            data = {"license": license, "hwid": API.Constants.HWID(),
+                    "lastIP": API.Constants.IP(), "appId": API.ApplicationSettings.id}
+            response = requests.post(
+                url, data=json.dumps(data), headers=headers)
+            content = response.json()
+
+            received_hash = response.headers.get('X-Response-Hash')
+            recalculated_hash = API.Security.calculate_hash(response.text)
+
+            # print(received_hash)
+            # print(recalculated_hash)
+
+            if API.Security.malicious_check(API.Constants.timeSent):
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if API.Constants.breached:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if received_hash != recalculated_hash:
+                print("Possible malicious activity detected!")
+                sys.exit(0)
+
+            if response.status_code == requests.codes.ok or response.status_code == requests.codes.CREATED:
+                API.User.id = content["user"]["id"]
+                API.User.username = content["user"]["username"]
+                API.User.email = content["user"]["email"]
+                API.User.expiry = content["user"]["expiryDate"]
+                API.User.lastLogin = content["user"]["lastLogin"]
+                API.User.ip = content["user"]["lastIP"]
+                API.User.hwid = content["user"]["hwid"]
+                API.User.authToken = content["token"]
+                API.Security.end()
+                return True
+            else:
+                if content["code"] == "UNAUTHORIZED":
+                    print(content["message"])
+                elif content["code"] == "NOT_FOUND":
+                    print(content["message"])
+                elif content["code"] == "VALIDATION_FAILED":
+                    print(content["details"])
+                elif content["code"] == "FORBIDDEN":
+                    print(content["message"])
+                API.Security.end()
+                return False
+        except Exception as ex:
+            if "Unable to connect to the remote server" in str(ex):
+                print("Unable to connect to the remote server!")
+            else:
+                print(str(ex))
+            API.Security.end()
+            return False
+
+    @staticmethod
     def register(username, password, email, license):
         if not API.Constants.initialized:
             print("Please initialize your application first!")
@@ -289,7 +353,7 @@ class API:
                 print(str(ex))
             API.Security.end()
             return False
-        
+
     @staticmethod
     def extendSub(username, password, license):
         if not API.Constants.initialized:

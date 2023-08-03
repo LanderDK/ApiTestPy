@@ -5,9 +5,10 @@ API.OnProgramStart.Initialize(
     "APP NAME", "APP SECRET", "APP VERSION")
 
 print("\n[1] Login")
-print("[2] Register")
+print("[2] Login (license only)")
+print("[3] Register")
 if not API.ApplicationSettings.freeMode:
-    print("[3] Extend Subscription")
+    print("[4] Extend Subscription")
 print("\nOption:")
 option = input()
 
@@ -44,7 +45,27 @@ if option == "1":
 
     else:
         sys.exit(0)
+
 elif option == "2":
+    print("\License:")
+    license = input()
+
+    if API.loginLicenseOnly(license=license):
+        print("Successfully Logged In!")
+        API.log(username=API.User.username, action="User logged in")
+        print("ID:", API.User.id)
+        print("Username:", API.User.username)
+        print("Email:", API.User.email)
+        print("Subscription Expiry:", API.User.expiry)
+        print("HWID:", API.User.hwid)
+        print("Last Login:", API.User.lastLogin)
+        print("IP:", API.User.ip)
+        input()
+        # Do code you want
+    else:
+        sys.exit(0)
+
+elif option == "3":
     print("\nUsername:")
     username = input()
     print("Password:")
@@ -65,7 +86,7 @@ elif option == "2":
         sys.exit(0)
 
 if not API.ApplicationSettings.freeMode:
-    if option == "3":
+    if option == "4":
         print("\nUsername:")
         username = input()
         print("Password:")
